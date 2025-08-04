@@ -1,0 +1,14 @@
+server:
+  port: 8080
+  timeout: 30
+
+database:
+  driver: "mysql"
+  dsn: "web:pass@tcp(localhost:3306)/student_management?parseTime=true"
+  maxOpenConns: 10
+  maxIdleConns: 5
+  connMaxLifetime: 3600
+
+jwt:
+  secret: "your-secret-key-here"
+  expiration: 86400 # 24 hours in seconds
