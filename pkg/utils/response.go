@@ -12,6 +12,13 @@ type Response struct {
 	Data    interface{} `json:"data"`    // 响应数据
 }
 
+// ApiResponse 统一响应结构（与原来的Response结构保持一致）
+type ApiResponse struct {
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
 // NewResponse 创建一个新的响应对象
 func NewResponse(code int, message string, data interface{}) *Response {
 	return &Response{
@@ -80,30 +87,44 @@ func ValidationError(w http.ResponseWriter, message string, errors interface{}) 
 	resp.JSON(w)
 }
 
-// WriteJSONResponse 写入JSON响应
+// WriteJSONResponse 写入JSON响应（修改为统一格式）
 func WriteJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
+	response := ApiResponse{
+		Code:    statusCode,
+		Message: "success",
+		Data:    data,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	
-	if data != nil {
-		if err := json.NewEncoder(w).Encode(data); err != nil {
-			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		}
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 	}
 }
 
-// WriteErrorResponse 写入错误响应
+// WriteErrorResponse 写入错误响应（修改为统一格式）
 func WriteErrorResponse(w http.ResponseWriter, statusCode int, message string) {
-	response := map[string]string{
-		"error": message,
+	response := ApiResponse{
+		Code:    statusCode,
+		Message: message,
+		Data:    nil,
 	}
-	WriteJSONResponse(w, statusCode, response)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(response)
 }
 
-// WriteSuccessResponse 写入成功响应
+// WriteSuccessResponse 写入成功响应（修改为统一格式）
 func WriteSuccessResponse(w http.ResponseWriter, message string) {
-	response := map[string]string{
-		"message": message,
+	response := ApiResponse{
+		Code:    http.StatusOK,
+		Message: message,
+		Data:    nil,
 	}
-	WriteJSONResponse(w, http.StatusOK, response)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }

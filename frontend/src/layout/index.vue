@@ -17,23 +17,23 @@
           <el-icon><HomeFilled /></el-icon>
           <template #title>首页</template>
         </el-menu-item>
-        <el-menu-item index="/course">
+        <el-menu-item index="/dashboard/course">
           <el-icon><Reading /></el-icon>
           <template #title>课程管理</template>
         </el-menu-item>
-        <el-menu-item index="/student">
+        <el-menu-item index="/dashboard/student">
           <el-icon><User /></el-icon>
           <template #title>学生管理</template>
         </el-menu-item>
-        <el-menu-item index="/instructor">
+        <el-menu-item index="/dashboard/instructor">
           <el-icon><UserFilled /></el-icon>
           <template #title>教师管理</template>
         </el-menu-item>
-        <el-menu-item index="/classroom">
+        <el-menu-item index="/dashboard/classroom">
           <el-icon><School /></el-icon>
           <template #title>教室管理</template>
         </el-menu-item>
-        <el-menu-item index="/registration">
+        <el-menu-item index="/dashboard/registration">
           <el-icon><List /></el-icon>
           <template #title>选课系统</template>
         </el-menu-item>
@@ -52,10 +52,13 @@
           </el-icon>
         </div>
         <div class="right-menu">
-          <el-dropdown @command="handleCommand">
+          <el-dropdown @command="handleCommand" trigger="click">
             <span class="user-avatar">
               <el-avatar :size="30" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
               <span class="user-name">Admin</span>
+              <el-icon class="el-icon--right">
+                <arrow-down />
+              </el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -74,6 +77,84 @@
     </el-container>
   </div>
 </template>
+
+<script>
+import { defineComponent, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import {
+  HomeFilled,
+  Reading,
+  User,
+  UserFilled,
+  School,
+  List,
+  Expand,
+  Fold,
+  ArrowDown
+} from '@element-plus/icons-vue'
+
+export default defineComponent({
+  name: 'Layout',
+  components: {
+    HomeFilled,
+    Reading,
+    User,
+    UserFilled,
+    School,
+    List,
+    Expand,
+    Fold,
+    ArrowDown
+  },
+  setup() {
+    const isCollapse = ref(false)
+    const router = useRouter()
+
+    const handleCommand = (command) => {
+      console.log('handleCommand 被调用，command:', command)
+      
+      if (command === 'logout') {
+        console.log('开始处理退出登录')
+        
+        try {
+          // 清除存储
+          localStorage.removeItem('token')
+          localStorage.removeItem('userType')
+          localStorage.removeItem('userId')
+          localStorage.removeItem('remembered_username')
+          localStorage.removeItem('remembered_type')
+          
+          console.log('localStorage 已清除')
+          console.log('当前token:', localStorage.getItem('token'))
+          
+          // 跳转到登录页
+          router.push('/login').then(() => {
+            console.log('路由跳转成功')
+          }).catch(error => {
+            console.error('路由跳转失败:', error)
+          })
+          
+        } catch (error) {
+          console.error('退出登录过程中出现错误:', error)
+        }
+        
+      } else if (command === 'profile') {
+        console.log('处理个人信息点击')
+        alert('个人信息功能待开发')
+      } else {
+        console.log('未知命令:', command)
+      }
+    }
+
+    console.log('Layout组件初始化完成')
+
+    return {
+      isCollapse,
+      handleCommand
+    }
+  }
+})
+</script>
 
 <style scoped>
 .app-wrapper {
@@ -142,6 +223,13 @@
   display: flex;
   align-items: center;
   cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.user-avatar:hover {
+  background-color: #f5f5f5;
 }
 
 .user-name {

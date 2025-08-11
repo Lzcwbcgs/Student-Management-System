@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -41,6 +42,11 @@ func main() {
 	// 检查数据库连接
 	if err := db.Ping(); err != nil {
 		log.Fatalf("Failed to ping database: %v", err)
+	}
+
+	// 执行数据库初始化脚本
+	if err := executeSQLScript(db, "../scripts/init.sql"); err != nil {
+		log.Fatalf("Failed to execute init.sql: %v", err)
 	}
 
 	// 初始化仓库层
@@ -78,6 +84,9 @@ func main() {
 
 	// 创建路由
 	mux := http.NewServeMux()
+
+	// 添加 CORS 中间件
+	corsMux := middleware.CORSMiddleware(mux)
 
 	// 认证路由
 	mux.HandleFunc("/api/login", authHandler.Login)
@@ -143,7 +152,7 @@ func main() {
 	// 创建HTTP服务器
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),
-		Handler: mux,
+		Handler: corsMux,
 	}
 
 	// 启动服务器
@@ -168,4 +177,40 @@ func main() {
 	}
 
 	log.Println("Server exiting")
+}
+
+// executeSQLScript 读取并执行 SQL 脚本文件
+func executeSQLScript(db *sql.DB, filePath string) error {
+	content, err := os.ReadFile(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to read SQL script file %s: %w", filePath, err)
+	}
+
+	sqls := string(content)
+	// 分割 SQL 语句，这里简单地按分号分割，实际项目中可能需要更复杂的解析
+	statements := splitSQLStatements(sqls)
+
+	for _, stmt := range statements {
+		stmt = trimSpaceAndNewline(stmt)
+		if stmt == "" {
+			continue
+		}
+		_, err := db.Exec(stmt)
+		if err != nil {
+			return fmt.Errorf("failed to execute SQL statement: %s\nError: %w", stmt, err)
+		}
+	}
+	log.Printf("Successfully executed SQL script: %s", filePath)
+	return nil
+}
+
+// splitSQLStatements 辅助函数：分割 SQL 语句
+func splitSQLStatements(sqlContent string) []string {
+	// 简单的分割逻辑，不处理复杂的 SQL 语法，例如包含分号的字符串字面量
+	return strings.Split(sqlContent, ";")
+}
+
+// trimSpaceAndNewline 辅助函数：去除字符串首尾的空格和换行符
+func trimSpaceAndNewline(s string) string {
+	return strings.TrimSpace(strings.Trim(s, "\n\r\t "))
 }

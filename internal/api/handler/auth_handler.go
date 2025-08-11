@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/yourusername/student-management-system/internal/model"
@@ -118,6 +119,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
+		log.Printf("Login failed for user %s (role: %s): %v", loginData.UserID, loginData.Role, err)
 		utils.WriteErrorResponse(w, http.StatusUnauthorized, "Invalid credentials")
 		return
 	}

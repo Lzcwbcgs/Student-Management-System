@@ -8,7 +8,7 @@ const routes = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/login/index.vue'),
+    component: () => import('../views/login/index.vue'),
     meta: { title: '登录', noAuth: true }
   },
   {
@@ -17,7 +17,7 @@ const routes = [
     redirect: '/dashboard/index',
     children: [
       {
-        path: 'dashboard',
+        path: 'index',
         name: 'Dashboard',
         component: () => import('../views/dashboard/index.vue'),
         meta: { title: '首页', icon: 'HomeFilled' }
@@ -63,34 +63,31 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
-  const userType = localStorage.getItem('userType')
+  const token = localStorage.getItem('token');
+  const userType = localStorage.getItem('userType'); // 确保与登录时存储的key一致
   
-  // 如果前往登录页
+  // 访问登录页的特殊处理
   if (to.path === '/login') {
-    if (token) {
-      // 已登录则跳转到仪表盘
-      next('/dashboard')
+    // 如果是从退出登录过来的（from.path是/dashboard），允许访问
+    if (from.path === '/dashboard') {
+      next();
+    } 
+    // 如果已登录但非退出操作，重定向到首页
+    else if (token) {
+      next('/dashboard');
     } else {
-      // 未登录则允许访问登录页
-      next()
+      next();
     }
-    return
+    return;
   }
 
-  // 检查是否登录
-  if (!token && to.path !== '/login') {
-    next('/login')
-    return
+  // 非登录页需要认证
+  if (!token) {
+    next('/login');
+    return;
   }
 
-  // 检查路由权限
-  if (to.meta.roles && !to.meta.roles.includes(userType)) {
-    next('/403')
-    return
-  }
-
-  next()
-})
+  next();
+});
 
 export default router

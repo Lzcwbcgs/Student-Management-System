@@ -1,16 +1,16 @@
 import request from './request'
 
-export function login(data) {
+export function login({ user_id, password, role }) {
   return request({
-    url: '/api/auth/login',
+    url: '/api/login',
     method: 'post',
-    data
+    data: { user_id, password, role }
   })
 }
 
 export function register(data) {
   return request({
-    url: '/api/auth/register',
+    url: '/api/register',
     method: 'post',
     data
   })
@@ -18,14 +18,14 @@ export function register(data) {
 
 export function logout() {
   return request({
-    url: '/api/auth/logout',
+    url: '/api/logout',
     method: 'post'
   })
 }
 
 export function getUserInfo() {
   return request({
-    url: '/api/auth/user-info',
+    url: '/api/user-info',
     method: 'get'
   })
 }

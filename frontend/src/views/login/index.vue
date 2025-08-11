@@ -290,47 +290,81 @@ const handleRegisterSubmit = async () => {
   })
 }
 
-// 登录处理
 const handleLogin = async () => {
-  if (!loginFormRef.value) return
+  console.debug('1. 开始登录流程'); // 调试点1
   
+  if (!loginFormRef.value) {
+    console.warn('登录表单引用未初始化!');
+    return;
+  }
+
   await loginFormRef.value.validate(async (valid) => {
-    if (valid) {
-      loading.value = true
-      try {
-        const response = await login({
-          ...loginForm,
-          remember: rememberMe.value
-        })
-        
-        if (response.code === 200) {
-          const { token, userInfo } = response.data
-          // 保存登录信息
-          localStorage.setItem('token', token)
-          localStorage.setItem('userType', loginForm.type)
-          localStorage.setItem('userInfo', JSON.stringify(userInfo))
-          
-          // 记住用户名
-          if (rememberMe.value) {
-            localStorage.setItem('remembered_username', loginForm.username)
-            localStorage.setItem('remembered_type', loginForm.type)
-          } else {
-            localStorage.removeItem('remembered_username')
-            localStorage.removeItem('remembered_type')
-          }
-          
-          ElMessage.success('登录成功')
-          router.push('/')
-        }
-      } catch (error) {
-        console.error('登录失败:', error)
-        ElMessage.error(error.response?.data?.message || '登录失败')
-      } finally {
-        loading.value = false
-      }
+    if (!valid) {
+      console.warn('2. 表单验证未通过'); // 调试点2
+      return;
     }
-  })
-}
+
+    loading.value = true;
+    console.debug('3. 开始提交登录请求', { 
+      username: loginForm.username,
+      type: loginForm.type 
+    }); // 调试点3
+
+    try {
+      const response = await login({
+        user_id: loginForm.username,
+        password: loginForm.password,
+        role: loginForm.type
+      });
+      
+      console.debug('4. 登录响应数据:', response); // 调试点4
+
+      if (response.code === 200) {
+        const { token, role, user_id } = response.data;
+        console.debug('5. 解析后的数据:', { token, role, user_id }); // 调试点5
+
+        // 存储登录状态
+        localStorage.setItem('token', token);
+        localStorage.setItem('userType', role);
+        localStorage.setItem('userId', user_id);
+        console.debug('6. localStorage已更新', { 
+          token: localStorage.getItem('token'),
+          userType: localStorage.getItem('userType') 
+        }); // 调试点6
+
+        // 记住用户名逻辑
+        if (rememberMe.value) {
+          localStorage.setItem('remembered_username', loginForm.username);
+          localStorage.setItem('remembered_type', loginForm.type);
+          console.debug('7. 已保存记住的用户名', { 
+            username: localStorage.getItem('remembered_username'),
+            type: localStorage.getItem('remembered_type') 
+          }); // 调试点7
+        } else {
+          localStorage.removeItem('remembered_username');
+          localStorage.removeItem('remembered_type');
+        }
+
+        await ElMessage.success('登录成功');
+        console.debug('8. 准备跳转到/dashboard'); // 调试点8
+        
+        // 关键调试：捕获路由跳转异常
+        await router.push('/dashboard').catch(err => {
+          console.error('9. 路由跳转失败:', err); // 调试点9
+        });
+      }
+    } catch (error) {
+      console.error('10. 登录请求异常:', { 
+        error: error.message,
+        response: error.response?.data 
+      }); // 调试点10
+      ElMessage.error(error.response?.data?.message || '登录失败');
+    } finally {
+      loading.value = false;
+      console.debug('11. 登录流程结束'); // 调试点11
+    }
+  });
+};
 
 // 初始化记住的用户名
 const initRememberedUser = () => {

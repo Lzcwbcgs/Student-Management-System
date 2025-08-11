@@ -1,7 +1,7 @@
 <template>
   <div class="course-container">
     <!-- 搜索和过滤区域 -->
-    <el-card class="filter-card">
+    <el-card class="filter-card" shadow="hover">
       <el-form :inline="true" :model="searchForm" @submit.prevent="handleSearch">
         <el-form-item label="课程代码">
           <el-input v-model="searchForm.code" placeholder="请输入课程代码" clearable />
@@ -35,7 +35,7 @@
     </el-card>
 
     <!-- 课程列表 -->
-    <el-card class="list-card">
+    <el-card class="list-card" shadow="hover">
       <template #header>
         <div class="card-header">
           <span class="header-title">课程列表</span>
@@ -485,8 +485,112 @@ onMounted(() => {
 }
 
 .list-card {
+  margin-top: 20px;
+}
+
+.stats-card {
+  height: 120px;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.stats-card-inner {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.stats-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 15px;
+  font-size: 30px;
+  color: #fff;
+}
+
+.stats-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.stats-title {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.stats-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.stats-trend {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.trend-icon {
+  margin-right: 5px;
+}
+
+.trend-up {
+  color: #67c23a;
+}
+
+.trend-down {
+  color: #f56c6c;
+}
+
+.chart-card {
+  height: 350px;
   margin-bottom: 20px;
 }
+
+.chart-container {
+  width: 100%;
+  height: 100%;
+}
+
+.activity-card {
+  margin-bottom: 20px;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.activity-title {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.activity-table .el-tag {
+  margin-right: 5px;
+}
+
+.empty-chart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #909399;
+  font-size: 16px;
+}
+
 
 .card-header {
   display: flex;
